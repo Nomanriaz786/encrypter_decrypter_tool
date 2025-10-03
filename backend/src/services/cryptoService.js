@@ -4,6 +4,16 @@ export class CryptoService {
   // AES Encryption/Decryption
   static encryptAES(text, key, keySize = 256) {
     try {
+      if (!text || typeof text !== 'string') {
+        throw new Error('Text must be a non-empty string')
+      }
+      if (!key || typeof key !== 'string' || key.length === 0) {
+        throw new Error('Key must be a non-empty string')
+      }
+      if (![128, 192, 256].includes(keySize)) {
+        throw new Error('Key size must be 128, 192, or 256 bits')
+      }
+
       const algorithm = `aes-${keySize}-gcm`
       const keyBuffer = crypto.scryptSync(key, 'salt', keySize / 8)
       const iv = crypto.randomBytes(16)
@@ -49,6 +59,13 @@ export class CryptoService {
   // RSA Key Generation
   static generateRSAKeyPair(keySize = 2048) {
     try {
+      if (keySize < 1024) {
+        throw new Error('Key size must be at least 1024 bits')
+      }
+      if (keySize > 4096) {
+        throw new Error('Key size must not exceed 4096 bits')
+      }
+
       return crypto.generateKeyPairSync('rsa', {
         modulusLength: keySize,
         publicKeyEncoding: {
@@ -146,6 +163,13 @@ export class CryptoService {
   // File integrity checking
   static generateFileHash(fileBuffer, algorithm = 'sha256') {
     try {
+      if (!Buffer.isBuffer(fileBuffer)) {
+        throw new Error('Input must be a Buffer')
+      }
+      if (fileBuffer.length === 0) {
+        throw new Error('Buffer cannot be empty')
+      }
+
       return crypto.createHash(algorithm).update(fileBuffer).digest('hex')
     } catch (error) {
       throw new Error(`File hashing failed: ${error.message}`)
@@ -154,6 +178,13 @@ export class CryptoService {
 
   static verifyFileIntegrity(fileBuffer, expectedHash, algorithm = 'sha256') {
     try {
+      if (!Buffer.isBuffer(fileBuffer)) {
+        throw new Error('Input must be a Buffer')
+      }
+      if (!expectedHash || typeof expectedHash !== 'string') {
+        throw new Error('Expected hash must be a non-empty string')
+      }
+
       const actualHash = this.generateFileHash(fileBuffer, algorithm)
       return {
         isValid: actualHash === expectedHash.toLowerCase(),

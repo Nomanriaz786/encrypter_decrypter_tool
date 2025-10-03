@@ -22,6 +22,9 @@ export async function authenticateToken(req, res, next) {
     req.user = user
     next()
   } catch (error) {
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(403).json({ error: 'Invalid token' })
+    }
     return res.status(403).json({ error: 'Invalid token' })
   }
 }

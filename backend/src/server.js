@@ -82,6 +82,9 @@ app.get('/', (req, res) => {
 // Error handling middleware (must be last)
 app.use(errorHandler)
 
+// Export app for testing
+export default app
+
 // Start server
 async function startServer() {
   try {
@@ -98,4 +101,7 @@ async function startServer() {
   }
 }
 
-startServer()
+// Only start server if this file is run directly (not imported for testing)
+if (import.meta.url === `file://${process.argv[1]}`) {
+  startServer()
+}

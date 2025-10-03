@@ -9,7 +9,7 @@
     "dev": "nodemon src/server.js",
     "seed": "node src/seed.js",
     "seed:dev": "set NODE_ENV=development && node src/seed.js",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.js",
     "test:watch": "npm test -- --watch",
     "test:coverage": "npm test -- --coverage",
     "test:ci": "npm test -- --ci --coverage --maxWorkers=2",
