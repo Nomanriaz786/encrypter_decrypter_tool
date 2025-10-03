@@ -206,8 +206,9 @@ function SignDocumentTab() {
         
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Signature Algorithm</label>
+            <label htmlFor="signature-algorithm" className="block text-sm font-medium text-gray-700">Signature Algorithm</label>
             <select
+              id="signature-algorithm"
               value={algorithm}
               onChange={(e) => setAlgorithm(e.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -218,35 +219,45 @@ function SignDocumentTab() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Select RSA Signing Key</label>
-            {loadingKeys ? (
-              <div className="flex items-center justify-center py-4 text-gray-500">
-                <RefreshCw className="h-5 w-5 animate-spin mr-2" />
-                Loading keys...
-              </div>
-            ) : keys.length === 0 ? (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 text-sm text-yellow-800">
-                No RSA keys found. Please generate an RSA key in Key Management first.
-              </div>
-            ) : (
-              <select
-                value={selectedKey}
-                onChange={(e) => setSelectedKey(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Select a signing key...</option>
-                {keys.map((key) => (
-                  <option key={key.id} value={key.id}>
-                    {key.name} (RSA-{key.keySize})
-                  </option>
-                ))}
-              </select>
-            )}
+            <label htmlFor="rsa-signing-key" className="block text-sm font-medium text-gray-700 mb-1">Select RSA Signing Key</label>
+            {(() => {
+              if (loadingKeys) {
+                return (
+                  <div className="flex items-center justify-center py-4 text-gray-500">
+                    <RefreshCw className="h-5 w-5 animate-spin mr-2" />
+                    Loading keys...
+                  </div>
+                )
+              }
+              if (keys.length === 0) {
+                return (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 text-sm text-yellow-800">
+                    No RSA keys found. Please generate an RSA key in Key Management first.
+                  </div>
+                )
+              }
+              return (
+                <select
+                  id="rsa-signing-key"
+                  value={selectedKey}
+                  onChange={(e) => setSelectedKey(e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select a signing key...</option>
+                  {keys.map((key) => (
+                    <option key={key.id} value={key.id}>
+                      {key.name} (RSA-{key.keySize})
+                    </option>
+                  ))}
+                </select>
+              )
+            })()}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Document Content</label>
+            <label htmlFor="document-content" className="block text-sm font-medium text-gray-700">Document Content</label>
             <textarea
+              id="document-content"
               value={documentText}
               onChange={(e) => setDocumentText(e.target.value)}
               rows={8}
@@ -283,8 +294,9 @@ function SignDocumentTab() {
           {signature ? (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Digital Signature</label>
+                <label htmlFor="generated-digital-signature" className="block text-sm font-medium text-gray-700 mb-2">Digital Signature</label>
                 <textarea
+                  id="generated-digital-signature"
                   value={JSON.stringify({
                     signature,
                     signaturePayload,
@@ -398,10 +410,25 @@ function VerifySignatureTab() {
   const [publicKey, setPublicKey] = useState('')
   const [verificationResult, setVerificationResult] = useState<'unknown' | 'valid' | 'invalid'>('unknown')
 
-  const handleVerify = () => {
-    // TODO: Implement actual signature verification
-    // For demo purposes, randomly return valid/invalid
-    setVerificationResult(Math.random() > 0.5 ? 'valid' : 'invalid')
+  const handleVerify = async () => {
+    if (!document.trim() || !signature.trim() || !publicKey.trim()) {
+      toast.error('Please fill in all fields')
+      return
+    }
+
+    try {
+      const response = await signatureAPI.verify({
+        data: document,
+        signature: signature,
+        publicKey: publicKey
+      })
+      setVerificationResult(response.data.isValid ? 'valid' : 'invalid')
+      toast.success(response.data.isValid ? 'Signature is valid!' : 'Signature is invalid!')
+    } catch (error: any) {
+      console.error('Verification error:', error)
+      setVerificationResult('invalid')
+      toast.error(error.response?.data?.error || 'Failed to verify signature')
+    }
   }
 
   return (
@@ -411,8 +438,9 @@ function VerifySignatureTab() {
         
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Original Document</label>
+            <label htmlFor="original-document" className="block text-sm font-medium text-gray-700">Original Document</label>
             <textarea
+              id="original-document"
               value={document}
               onChange={(e) => setDocument(e.target.value)}
               rows={4}
@@ -422,8 +450,9 @@ function VerifySignatureTab() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Digital Signature</label>
+            <label htmlFor="digital-signature" className="block text-sm font-medium text-gray-700">Digital Signature</label>
             <textarea
+              id="digital-signature"
               value={signature}
               onChange={(e) => setSignature(e.target.value)}
               rows={4}
@@ -433,8 +462,9 @@ function VerifySignatureTab() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Public Key</label>
+            <label htmlFor="public-key" className="block text-sm font-medium text-gray-700">Public Key</label>
             <textarea
+              id="public-key"
               value={publicKey}
               onChange={(e) => setPublicKey(e.target.value)}
               rows={4}

@@ -308,7 +308,6 @@ router.get('/audit-logs', async (req, res, next) => {
       userId, 
       action, 
       resource, 
-      status, 
       startDate, 
       endDate 
     } = req.query

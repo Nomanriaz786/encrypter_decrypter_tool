@@ -356,10 +356,19 @@ const AdminDashboard: React.FC = () => {
                     <span className="text-sm text-gray-700">Database</span>
                   </div>
                   <div className="flex items-center">
-                    <div className={`w-3 h-3 rounded-full mr-2 ${
-                      systemHealth.network === 'good' ? 'bg-green-400' : 
-                      systemHealth.network === 'warning' ? 'bg-yellow-400' : 'bg-red-400'
-                    }`}></div>
+                    {(() => {
+                      let networkColor = '';
+                      if (systemHealth.network === 'good') {
+                        networkColor = 'bg-green-400';
+                      } else if (systemHealth.network === 'warning') {
+                        networkColor = 'bg-yellow-400';
+                      } else {
+                        networkColor = 'bg-red-400';
+                      }
+                      return (
+                        <div className={`w-3 h-3 rounded-full mr-2 ${networkColor}`}></div>
+                      );
+                    })()}
                     <span className="text-sm text-gray-700">Network</span>
                   </div>
                 </div>
@@ -626,18 +635,18 @@ const AdminDashboard: React.FC = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <label className="text-sm font-medium text-gray-700">Require 2FA for all users</label>
+                      <label htmlFor="require-2fa" className="text-sm font-medium text-gray-700">Require 2FA for all users</label>
                       <p className="text-sm text-gray-500">Force all users to enable two-factor authentication</p>
                     </div>
-                    <input type="checkbox" className="toggle" defaultChecked />
+                    <input id="require-2fa" type="checkbox" className="toggle" defaultChecked />
                   </div>
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <label className="text-sm font-medium text-gray-700">Session timeout</label>
+                      <label htmlFor="session-timeout" className="text-sm font-medium text-gray-700">Session timeout</label>
                       <p className="text-sm text-gray-500">Automatically log out inactive users</p>
                     </div>
-                    <select className="border border-gray-300 rounded-md px-3 py-2">
+                    <select id="session-timeout" className="border border-gray-300 rounded-md px-3 py-2">
                       <option>30 minutes</option>
                       <option>1 hour</option>
                       <option>2 hours</option>
@@ -647,10 +656,10 @@ const AdminDashboard: React.FC = () => {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <label className="text-sm font-medium text-gray-700">Key rotation interval</label>
+                      <label htmlFor="key-rotation-interval" className="text-sm font-medium text-gray-700">Key rotation interval</label>
                       <p className="text-sm text-gray-500">Automatically rotate encryption keys</p>
                     </div>
-                    <select className="border border-gray-300 rounded-md px-3 py-2">
+                    <select id="key-rotation-interval" className="border border-gray-300 rounded-md px-3 py-2">
                       <option>30 days</option>
                       <option>60 days</option>
                       <option>90 days</option>
@@ -665,18 +674,18 @@ const AdminDashboard: React.FC = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <label className="text-sm font-medium text-gray-700">Automatic backups</label>
+                      <label htmlFor="automatic-backups" className="text-sm font-medium text-gray-700">Automatic backups</label>
                       <p className="text-sm text-gray-500">Enable scheduled database backups</p>
                     </div>
-                    <input type="checkbox" className="toggle" defaultChecked />
+                    <input id="automatic-backups" type="checkbox" className="toggle" defaultChecked />
                   </div>
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <label className="text-sm font-medium text-gray-700">Backup frequency</label>
+                      <label htmlFor="backup-frequency" className="text-sm font-medium text-gray-700">Backup frequency</label>
                       <p className="text-sm text-gray-500">How often to create backups</p>
                     </div>
-                    <select className="border border-gray-300 rounded-md px-3 py-2">
+                    <select id="backup-frequency" className="border border-gray-300 rounded-md px-3 py-2">
                       <option>Daily</option>
                       <option>Weekly</option>
                       <option>Monthly</option>

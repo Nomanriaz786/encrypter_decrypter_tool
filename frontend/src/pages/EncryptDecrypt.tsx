@@ -146,9 +146,10 @@ export default function EncryptDecrypt() {
           decryptData.encryptedData = encryptedObj
           decryptData.key = keyData.keyData
         } catch (e) {
-          toast.error('Invalid AES encrypted data format. Expected JSON with encrypted, iv, and authTag fields.')
-          setLoading(false)
-          return
+          console.error('AES decryption input parse error:', e);
+          toast.error('Invalid AES encrypted data format. Expected JSON with encrypted, iv, and authTag fields.');
+          setLoading(false);
+          return;
         }
       } else if (selectedKeyObj.algorithm === 'RSA') {
         decryptData.encryptedData = inputText
@@ -278,7 +279,7 @@ export default function EncryptDecrypt() {
 
             {/* Key Selection */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="encryption-key-select" className="block text-sm font-medium text-gray-700 mb-2">
                 Select Encryption Key
               </label>
               {keys.length === 0 ? (
@@ -296,6 +297,7 @@ export default function EncryptDecrypt() {
               ) : (
                 <div className="flex items-center space-x-4">
                   <select
+                    id="encryption-key-select"
                     value={selectedKey}
                     onChange={(e) => handleKeyChange(e.target.value)}
                     className="flex-1 block px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -317,13 +319,14 @@ export default function EncryptDecrypt() {
             {/* Input Section */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-700">
+                <label htmlFor="input-text" className="block text-sm font-medium text-gray-700">
                   {mode === 'encrypt' ? 'Plain Text' : 'Encrypted Text'}
                 </label>
-                <label className="cursor-pointer text-sm text-blue-600 hover:text-blue-700 font-medium">
+                <label htmlFor="file-upload" className="cursor-pointer text-sm text-blue-600 hover:text-blue-700 font-medium">
                   <Upload className="h-4 w-4 inline mr-1" />
                   Upload File
                   <input
+                    id="file-upload"
                     type="file"
                     accept=".txt,.json"
                     onChange={handleFileUpload}
@@ -332,6 +335,7 @@ export default function EncryptDecrypt() {
                 </label>
               </div>
               <textarea
+                id="input-text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder={
@@ -399,7 +403,7 @@ export default function EncryptDecrypt() {
             {outputText && (
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="output-text" className="block text-sm font-medium text-gray-700">
                     {mode === 'encrypt' ? 'Encrypted Text' : 'Decrypted Text'}
                   </label>
                   <div className="flex items-center space-x-2">
@@ -421,6 +425,7 @@ export default function EncryptDecrypt() {
                 </div>
                 <div className="relative">
                   <textarea
+                    id="output-text"
                     value={outputText}
                     readOnly
                     rows={8}

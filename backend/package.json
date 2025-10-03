@@ -9,7 +9,14 @@
     "dev": "nodemon src/server.js",
     "seed": "node src/seed.js",
     "seed:dev": "set NODE_ENV=development && node src/seed.js",
-    "test": "jest"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "npm test -- --watch",
+    "test:coverage": "npm test -- --coverage",
+    "test:ci": "npm test -- --ci --coverage --maxWorkers=2",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix",
+    "security:scan": "npm audit",
+    "security:fix": "npm audit fix"
   },
   "keywords": [
     "encryption",
@@ -35,7 +42,11 @@
     "speakeasy": "^2.0.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.22.0",
+    "@babel/preset-env": "^7.22.0",
+    "eslint": "^8.42.0",
     "jest": "^29.5.0",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "supertest": "^6.3.3"
   }
 }

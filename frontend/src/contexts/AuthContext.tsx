@@ -25,7 +25,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(null)
 
@@ -61,15 +61,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const contextValue = React.useMemo(() => ({
+    user,
+    isAuthenticated: !!token,
+    login,
+    logout,
+    updateUser,
+    token
+  }), [user, token, login, logout, updateUser])
+
   return (
-    <AuthContext.Provider value={{
-      user,
-      isAuthenticated: !!token,
-      login,
-      logout,
-      updateUser,
-      token
-    }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   )

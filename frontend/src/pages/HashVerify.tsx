@@ -153,10 +153,11 @@ function GenerateHashTab() {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="hash-algorithm" className="block text-sm font-medium text-gray-700 mb-1">
               Hash Algorithm
             </label>
             <select
+              id="hash-algorithm"
               value={algorithm}
               onChange={(e) => setAlgorithm(e.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -169,10 +170,11 @@ function GenerateHashTab() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="hash-input-text" className="block text-sm font-medium text-gray-700 mb-1">
               Input Text or Data
             </label>
             <textarea
+              id="hash-input-text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               rows={10}
@@ -358,11 +360,11 @@ function VerifyIntegrityTab() {
         expectedHash: response.data.expectedHash
       })
 
-      if (response.data.isValid) {
-        toast.success('✓ Integrity verified - Data matches!')
-      } else {
-        toast.error('✗ Integrity check failed - Data has been modified!')
-      }
+      toast[response.data.isValid ? 'success' : 'error'](
+        response.data.isValid
+          ? '✓ Integrity verified - Data matches!'
+          : '✗ Integrity check failed - Data has been modified!'
+      )
     } catch (error: any) {
       console.error('Verification error:', error)
       toast.error(error.response?.data?.error || 'Failed to verify integrity')
@@ -405,10 +407,11 @@ function VerifyIntegrityTab() {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="verify-algorithm" className="block text-sm font-medium text-gray-700 mb-1">
               Hash Algorithm
             </label>
             <select
+              id="verify-algorithm"
               value={algorithm}
               onChange={(e) => setAlgorithm(e.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -421,10 +424,11 @@ function VerifyIntegrityTab() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="verify-original-data" className="block text-sm font-medium text-gray-700 mb-1">
               Original Data
             </label>
             <textarea
+              id="verify-original-data"
               value={originalData}
               onChange={(e) => setOriginalData(e.target.value)}
               rows={6}
@@ -435,10 +439,11 @@ function VerifyIntegrityTab() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="verify-expected-hash" className="block text-sm font-medium text-gray-700 mb-1">
               Expected Hash Value
             </label>
             <input
+              id="verify-expected-hash"
               type="text"
               value={expectedHash}
               onChange={(e) => setExpectedHash(e.target.value)}
@@ -504,111 +509,128 @@ function VerifyIntegrityTab() {
 
       <div className="bg-white p-6 rounded-lg shadow">
         <h3 className="text-lg font-medium text-gray-900 mb-4">Verification Result</h3>
+        <VerificationResult
+          verificationResult={verificationResult}
+          algorithm={algorithm}
+          originalData={originalData}
+        />
+      </div>
+    </div>
+  )
+}
 
-        <div className="space-y-4">
-          {verificationResult ? (
-            <>
-              <div className={`p-6 rounded-lg border-2 ${
-                verificationResult.isValid
-                  ? 'bg-green-50 border-green-300'
-                  : 'bg-red-50 border-red-300'
-              }`}>
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    {verificationResult.isValid ? (
-                      <CheckCircle className="h-12 w-12 text-green-500" />
-                    ) : (
-                      <XCircle className="h-12 w-12 text-red-500" />
-                    )}
-                  </div>
-                  <div className="ml-4">
-                    <h3 className={`text-xl font-bold ${
-                      verificationResult.isValid ? 'text-green-800' : 'text-red-800'
-                    }`}>
-                      {verificationResult.isValid ? 'Integrity Verified ✓' : 'Integrity Check Failed ✗'}
-                    </h3>
-                    <p className={`mt-2 text-sm ${
-                      verificationResult.isValid ? 'text-green-700' : 'text-red-700'
-                    }`}>
-                      {verificationResult.isValid
-                        ? 'The data matches the expected hash. The content has not been modified.'
-                        : 'The data does not match the expected hash. The content may have been tampered with or corrupted.'
-                      }
-                    </p>
-                  </div>
-                </div>
-              </div>
+type VerificationResultProps = {
+  verificationResult: {
+    isValid: boolean
+    actualHash: string
+    expectedHash: string
+  } | null
+  algorithm: string
+  originalData: string
+}
 
-              <div className="pt-4 border-t border-gray-200">
-                <h4 className="text-sm font-medium text-gray-900 mb-3">Hash Comparison</h4>
-                
-                <div className="space-y-3">
-                  <div>
-                    <dt className="text-xs font-medium text-gray-500 mb-1">Expected Hash:</dt>
-                    <dd className="text-xs text-gray-900 font-mono bg-gray-50 p-2 rounded break-all">
-                      {verificationResult.expectedHash}
-                    </dd>
-                  </div>
-                  
-                  <div>
-                    <dt className="text-xs font-medium text-gray-500 mb-1">Actual Hash:</dt>
-                    <dd className={`text-xs font-mono p-2 rounded break-all ${
-                      verificationResult.isValid
-                        ? 'text-green-900 bg-green-50'
-                        : 'text-red-900 bg-red-50'
-                    }`}>
-                      {verificationResult.actualHash}
-                    </dd>
-                  </div>
+function VerificationResult({ verificationResult, algorithm, originalData }: Readonly<VerificationResultProps>) {
+  if (!verificationResult) {
+    return (
+      <div className="text-center py-12">
+        <CheckCircle className="mx-auto h-12 w-12 text-gray-400" />
+        <h3 className="mt-2 text-sm font-medium text-gray-900">No Verification Performed</h3>
+        <p className="mt-1 text-sm text-gray-500">
+          Enter data and expected hash to verify integrity
+        </p>
+      </div>
+    )
+  }
 
-                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-                    <div className="flex items-start">
-                      <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
-                      <p className="text-xs text-blue-800">
-                        {verificationResult.isValid
-                          ? 'Both hashes match exactly, confirming data integrity.'
-                          : 'The hashes do not match. Even a single character change will produce a completely different hash.'
-                        }
-                      </p>
-                    </div>
-                  </div>
-                </div>
+  const { isValid, actualHash, expectedHash } = verificationResult
 
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <dl className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <dt className="text-gray-500">Algorithm:</dt>
-                      <dd className="text-gray-900 font-medium">{algorithm.toUpperCase()}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-gray-500">Status:</dt>
-                      <dd className={`font-bold ${
-                        verificationResult.isValid ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {verificationResult.isValid ? 'VALID' : 'INVALID'}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-gray-500">Data Length:</dt>
-                      <dd className="text-gray-900">{originalData.length} chars</dd>
-                    </div>
-                    <div>
-                      <dt className="text-gray-500">Verified At:</dt>
-                      <dd className="text-gray-900">{new Date().toLocaleTimeString()}</dd>
-                    </div>
-                  </dl>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="text-center py-12">
-              <CheckCircle className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No Verification Performed</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Enter data and expected hash to verify integrity
+  return (
+    <div className="space-y-4">
+      <div className={`p-6 rounded-lg border-2 ${
+        isValid ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'
+      }`}>
+        <div className="flex items-start">
+          <div className="flex-shrink-0">
+            {isValid ? (
+              <CheckCircle className="h-12 w-12 text-green-500" />
+            ) : (
+              <XCircle className="h-12 w-12 text-red-500" />
+            )}
+          </div>
+          <div className="ml-4">
+            <h3 className={`text-xl font-bold ${
+              isValid ? 'text-green-800' : 'text-red-800'
+            }`}>
+              {isValid ? 'Integrity Verified ✓' : 'Integrity Check Failed ✗'}
+            </h3>
+            <p className={`mt-2 text-sm ${
+              isValid ? 'text-green-700' : 'text-red-700'
+            }`}>
+              {isValid
+                ? 'The data matches the expected hash. The content has not been modified.'
+                : 'The data does not match the expected hash. The content may have been tampered with or corrupted.'
+              }
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-4 border-t border-gray-200">
+        <h4 className="text-sm font-medium text-gray-900 mb-3">Hash Comparison</h4>
+        
+        <div className="space-y-3">
+          <div>
+            <dt className="text-xs font-medium text-gray-500 mb-1">Expected Hash:</dt>
+            <dd className="text-xs text-gray-900 font-mono bg-gray-50 p-2 rounded break-all">
+              {expectedHash}
+            </dd>
+          </div>
+          
+          <div>
+            <dt className="text-xs font-medium text-gray-500 mb-1">Actual Hash:</dt>
+            <dd className={`text-xs font-mono p-2 rounded break-all ${
+              isValid ? 'text-green-900 bg-green-50' : 'text-red-900 bg-red-50'
+            }`}>
+              {actualHash}
+            </dd>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+            <div className="flex items-start">
+              <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
+              <p className="text-xs text-blue-800">
+                {isValid
+                  ? 'Both hashes match exactly, confirming data integrity.'
+                  : 'The hashes do not match. Even a single character change will produce a completely different hash.'
+                }
               </p>
             </div>
-          )}
+          </div>
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <dl className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <dt className="text-gray-500">Algorithm:</dt>
+              <dd className="text-gray-900 font-medium">{algorithm.toUpperCase()}</dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">Status:</dt>
+              <dd className={`font-bold ${
+                isValid ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {isValid ? 'VALID' : 'INVALID'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">Data Length:</dt>
+              <dd className="text-gray-900">{originalData.length} chars</dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">Verified At:</dt>
+              <dd className="text-gray-900">{new Date().toLocaleTimeString()}</dd>
+            </div>
+          </dl>
         </div>
       </div>
     </div>

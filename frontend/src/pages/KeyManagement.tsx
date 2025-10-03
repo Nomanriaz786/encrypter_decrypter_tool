@@ -179,14 +179,16 @@ export default function KeyManagement() {
             </button>
           </div>
 
-          {loading ? (
+          {loading && (
             <div className="bg-white shadow sm:rounded-md p-12">
               <div className="flex flex-col items-center justify-center text-gray-500">
                 <RefreshCw className="h-12 w-12 animate-spin text-blue-600 mb-4" />
                 <p className="text-lg font-medium">Loading keys...</p>
               </div>
             </div>
-          ) : keys.length === 0 ? (
+          )}
+          
+          {!loading && keys.length === 0 && (
             <div className="bg-white shadow sm:rounded-md p-12">
               <div className="text-center">
                 <Key className="mx-auto h-12 w-12 text-gray-400 mb-4" />
@@ -203,7 +205,9 @@ export default function KeyManagement() {
                 </button>
               </div>
             </div>
-          ) : (
+          )}
+          
+          {!loading && keys.length > 0 && (
             <div className="bg-white shadow overflow-hidden sm:rounded-md">
               <ul className="divide-y divide-gray-200">
                 {keys.map((key) => (
@@ -315,10 +319,12 @@ export default function KeyManagement() {
   )
 }
 
-function CreateKeyModal({ onClose, onCreate }: {
-  onClose: () => void
-  onCreate: (key: { name: string; algorithm: string; keySize: number }) => void
-}) {
+interface CreateKeyModalProps {
+  readonly onClose: () => void
+  readonly onCreate: (key: { name: string; algorithm: string; keySize: number }) => void
+}
+
+function CreateKeyModal({ onClose, onCreate }: CreateKeyModalProps) {
   const [algorithm, setAlgorithm] = useState('AES')
   const [keySize, setKeySize] = useState('256')
   const [name, setName] = useState('')
@@ -338,8 +344,9 @@ function CreateKeyModal({ onClose, onCreate }: {
         <h3 className="text-lg font-bold text-gray-900 mb-4">Generate New Key</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Key Name</label>
+            <label htmlFor="create-key-name" className="block text-sm font-medium text-gray-700">Key Name</label>
             <input
+              id="create-key-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -349,8 +356,9 @@ function CreateKeyModal({ onClose, onCreate }: {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700">Algorithm</label>
+            <label htmlFor="create-key-algorithm" className="block text-sm font-medium text-gray-700">Algorithm</label>
             <select
+              id="create-key-algorithm"
               value={algorithm}
               onChange={(e) => setAlgorithm(e.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -361,8 +369,9 @@ function CreateKeyModal({ onClose, onCreate }: {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Key Size</label>
+            <label htmlFor="create-key-size" className="block text-sm font-medium text-gray-700">Key Size</label>
             <select
+              id="create-key-size"
               value={keySize}
               onChange={(e) => setKeySize(e.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -404,10 +413,12 @@ function CreateKeyModal({ onClose, onCreate }: {
   )
 }
 
-function ViewKeyModal({ keyId, onClose }: {
-  keyId: string
-  onClose: () => void
-}) {
+interface ViewKeyModalProps {
+  readonly keyId: string
+  readonly onClose: () => void
+}
+
+function ViewKeyModal({ keyId, onClose }: ViewKeyModalProps) {
   const [showKey, setShowKey] = useState(false)
   const [keyData, setKeyData] = useState<string>('')
   const [keyDetails, setKeyDetails] = useState<CryptoKey | null>(null)
@@ -444,16 +455,20 @@ function ViewKeyModal({ keyId, onClose }: {
       <div className="relative top-20 mx-auto p-5 border w-[600px] shadow-lg rounded-md bg-white">
         <h3 className="text-lg font-bold text-gray-900 mb-4">View Key Details</h3>
         
-        {loading ? (
+        {loading && (
           <div className="flex items-center justify-center py-8">
             <RefreshCw className="h-8 w-8 animate-spin text-blue-600" />
           </div>
-        ) : error ? (
+        )}
+        
+        {!loading && error && (
           <div className="bg-red-50 p-4 rounded-md flex items-center gap-2 text-red-800">
             <AlertCircle className="h-5 w-5" />
             <span>{error}</span>
           </div>
-        ) : (
+        )}
+        
+        {!loading && !error && (
           <div className="space-y-4">
             {keyDetails && (
               <div className="bg-gray-50 p-4 rounded-md space-y-2">
@@ -483,9 +498,10 @@ function ViewKeyModal({ keyId, onClose }: {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Private Key Data</label>
+              <label htmlFor="view-private-key" className="block text-sm font-medium text-gray-700 mb-2">Private Key Data</label>
               <div className="relative">
                 <textarea
+                  id="view-private-key"
                   value={showKey ? keyData : '••••••••••••••••••••••••••••••••••••••••••••••••••••••••'}
                   readOnly
                   rows={8}
@@ -503,8 +519,9 @@ function ViewKeyModal({ keyId, onClose }: {
 
             {keyDetails?.publicKey && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Public Key</label>
+                <label htmlFor="view-public-key" className="block text-sm font-medium text-gray-700 mb-2">Public Key</label>
                 <textarea
+                  id="view-public-key"
                   value={keyDetails.publicKey}
                   readOnly
                   rows={6}

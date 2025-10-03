@@ -17,7 +17,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />
 }
 
-function AdminRoute({ children }: { children: React.ReactNode }) {
+function AdminRoute({ children }: Readonly<{ children: React.ReactNode }>) {
   const { isAuthenticated, user } = useAuth()
   
   if (!isAuthenticated) {
@@ -31,7 +31,7 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
-function PublicRoute({ children }: { children: React.ReactNode }) {
+function PublicRoute({ children }: Readonly<{ children: React.ReactNode }>) {
   const { isAuthenticated, user } = useAuth()
   
   if (isAuthenticated) {

@@ -1,6 +1,5 @@
 import express from 'express'
 import { authenticateToken } from '../middleware/auth.js'
-import User from '../models/User.js'
 import CryptoKey from '../models/CryptoKey.js'
 import AuditLog from '../models/AuditLog.js'
 import { Op } from 'sequelize'

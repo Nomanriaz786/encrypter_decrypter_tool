@@ -358,12 +358,13 @@ export default function Profile() {
                   <form onSubmit={handleProfileUpdate} className="p-6 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="profile-firstName" className="block text-sm font-medium text-gray-700 mb-2">
                           First Name
                         </label>
                         <div className="relative">
                           <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                           <input
+                            id="profile-firstName"
                             type="text"
                             value={profileData.firstName}
                             onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
@@ -374,12 +375,13 @@ export default function Profile() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="profile-lastName" className="block text-sm font-medium text-gray-700 mb-2">
                           Last Name
                         </label>
                         <div className="relative">
                           <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                           <input
+                            id="profile-lastName"
                             type="text"
                             value={profileData.lastName}
                             onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
@@ -390,12 +392,13 @@ export default function Profile() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="profile-email" className="block text-sm font-medium text-gray-700 mb-2">
                           Email Address
                         </label>
                         <div className="relative">
                           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                           <input
+                            id="profile-email"
                             type="email"
                             value={user?.email || ''}
                             disabled
@@ -406,12 +409,13 @@ export default function Profile() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="profile-phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
                           Phone Number
                         </label>
                         <div className="relative">
                           <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                           <input
+                            id="profile-phoneNumber"
                             type="tel"
                             value={profileData.phoneNumber}
                             onChange={(e) => setProfileData({ ...profileData, phoneNumber: e.target.value })}
@@ -422,12 +426,13 @@ export default function Profile() {
                       </div>
 
                       <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="profile-department" className="block text-sm font-medium text-gray-700 mb-2">
                           Department
                         </label>
                         <div className="relative">
                           <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                           <input
+                            id="profile-department"
                             type="text"
                             value={profileData.department}
                             onChange={(e) => setProfileData({ ...profileData, department: e.target.value })}
@@ -475,12 +480,13 @@ export default function Profile() {
 
                   <form onSubmit={handlePasswordChange} className="p-6 space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="password-current" className="block text-sm font-medium text-gray-700 mb-2">
                         Current Password
                       </label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <input
+                          id="password-current"
                           type="password"
                           value={passwordData.currentPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
@@ -492,12 +498,13 @@ export default function Profile() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="password-new" className="block text-sm font-medium text-gray-700 mb-2">
                         New Password
                       </label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <input
+                          id="password-new"
                           type="password"
                           value={passwordData.newPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
@@ -510,12 +517,13 @@ export default function Profile() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="password-confirm" className="block text-sm font-medium text-gray-700 mb-2">
                         Confirm New Password
                       </label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <input
+                          id="password-confirm"
                           type="password"
                           value={passwordData.confirmPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
@@ -592,11 +600,8 @@ export default function Profile() {
                             : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500'
                         }`}
                       >
-                        {loading ? (
-                          <RefreshCw className="h-4 w-4 animate-spin" />
-                        ) : (
-                          user?.twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'
-                        )}
+                        {loading && <RefreshCw className="h-4 w-4 animate-spin" />}
+                        {!loading && (user?.twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA')}
                       </button>
                     </div>
                   </div>
@@ -779,12 +784,13 @@ export default function Profile() {
                 {/* Form Fields */}
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="disable2fa-password" className="block text-sm font-medium text-gray-700 mb-2">
                       Current Password
                     </label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                       <input
+                        id="disable2fa-password"
                         type="password"
                         value={disable2FAData.password}
                         onChange={(e) => setDisable2FAData({ ...disable2FAData, password: e.target.value })}
@@ -795,10 +801,11 @@ export default function Profile() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="disable2fa-token" className="block text-sm font-medium text-gray-700 mb-2">
                       2FA Verification Code
                     </label>
                     <input
+                      id="disable2fa-token"
                       type="text"
                       value={disable2FAData.token}
                       onChange={(e) => setDisable2FAData({ ...disable2FAData, token: e.target.value.replace(/\D/g, '').slice(0, 6) })}
