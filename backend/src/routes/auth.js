@@ -12,6 +12,8 @@ const router = express.Router()
 
 // Register
 router.post('/register', [
+  body('firstName').optional().trim(),
+  body('lastName').optional().trim(),
   body('username').isLength({ min: 3, max: 50 }).trim(),
   body('email').isEmail().normalizeEmail(),
   body('password').isLength({ min: 6 })
@@ -22,9 +24,11 @@ router.post('/register', [
       return res.status(400).json({ errors: errors.array() })
     }
 
-    const { username, email, password } = req.body
+    const { firstName, lastName, username, email, password } = req.body
 
     const user = await User.create({
+      firstName,
+      lastName,
       username,
       email,
       password

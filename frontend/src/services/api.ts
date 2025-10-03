@@ -33,7 +33,7 @@ api.interceptors.response.use(
 )
 
 export const authAPI = {
-  register: (userData: { username: string; email: string; password: string }) =>
+  register: (userData: { firstName: string; lastName: string; username: string; email: string; password: string }) =>
     api.post('/auth/register', userData),
   
   login: (credentials: { username: string; password: string; totpCode?: string }) =>

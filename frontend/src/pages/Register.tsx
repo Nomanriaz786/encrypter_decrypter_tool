@@ -37,8 +37,10 @@ export default function Register() {
 
     setLoading(true)
     try {
-      // Make actual API call to register user
+      // Make API call to register user
       await authAPI.register({
+        firstName: data.firstName,
+        lastName: data.lastName,
         username: data.username,
         email: data.email,
         password: data.password
