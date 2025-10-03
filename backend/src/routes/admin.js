@@ -34,11 +34,7 @@ router.get('/stats', async (req, res, next) => {
       }),
       AuditLog.findAll({
         limit: 10,
-        order: [['createdAt', 'DESC']],
-        include: [{
-          model: User,
-          attributes: ['username']
-        }]
+        order: [['createdAt', 'DESC']]
       })
     ])
 
@@ -58,7 +54,7 @@ router.get('/stats', async (req, res, next) => {
       recentActivity: recentActivity.map(activity => ({
         id: activity.id,
         userId: activity.userId,
-        username: activity.User?.username || 'Unknown',
+        username: 'User', // We'll get username separately if needed
         action: activity.action,
         resource: activity.resource,
         timestamp: activity.createdAt,
@@ -333,17 +329,13 @@ router.get('/audit-logs', async (req, res, next) => {
       where: whereClause,
       limit: parseInt(limit),
       offset,
-      order: [['createdAt', 'DESC']],
-      include: [{
-        model: User,
-        attributes: ['username']
-      }]
+      order: [['createdAt', 'DESC']]
     })
 
     const auditLogs = rows.map(log => ({
       id: log.id,
       userId: log.userId,
-      username: log.User?.username || 'Unknown',
+      username: 'User', // We'll get username separately if needed
       action: log.action,
       resource: log.resource,
       timestamp: log.createdAt,

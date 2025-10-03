@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
 import { Navigation } from '../components'
 import { cryptoAPI, keyAPI, dashboardAPI } from '../services/api'
 import toast from 'react-hot-toast'
@@ -34,7 +33,6 @@ interface RecentActivity {
 }
 
 const UserDashboard: React.FC = () => {
-  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<'encrypt' | 'decrypt' | 'hash'>('encrypt')
   const [stats, setStats] = useState<QuickStats>({
     totalKeys: 0,
@@ -240,7 +238,7 @@ const UserDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
-      <Navigation isAdmin={false} />
+      <Navigation />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}

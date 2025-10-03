@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Signature, FileText, CheckCircle, XCircle, Upload } from 'lucide-react'
+import { Navigation } from '../components'
 
 export default function DigitalSignature() {
   const [activeTab, setActiveTab] = useState('sign')
@@ -11,21 +12,21 @@ export default function DigitalSignature() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center">
-              <Signature className="h-8 w-8 text-blue-600" />
-              <h1 className="ml-3 text-2xl font-bold text-gray-900">Digital Signatures</h1>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Navigation */}
+      <Navigation />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
+          {/* Page Header */}
+          <div className="mb-8">
+            <div className="flex items-center">
+              <Signature className="h-8 w-8 text-blue-600" />
+              <h1 className="ml-3 text-2xl font-bold text-gray-900">Digital Signatures</h1>
+            </div>
+            <p className="mt-2 text-sm text-gray-600">Create and verify digital signatures for document authentication</p>
+          </div>
+
           {/* Tab Navigation */}
           <div className="border-b border-gray-200">
             <nav className="-mb-px flex space-x-8">
@@ -69,6 +70,23 @@ function SignDocumentTab() {
   const handleSign = () => {
     // TODO: Implement actual digital signature
     setSignature(`Digital signature generated using ${algorithm}`)
+  }
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        alert('File size must be less than 10MB')
+        return
+      }
+      
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const content = e.target?.result as string
+        setDocument(content)
+      }
+      reader.readAsText(file)
+    }
   }
 
   return (
@@ -160,7 +178,14 @@ function SignDocumentTab() {
                   <span className="text-sm font-medium text-blue-600 hover:text-blue-500">
                     Upload document
                   </span>
-                  <input id="document-upload" name="document-upload" type="file" className="sr-only" />
+                  <input 
+                    id="document-upload" 
+                    name="document-upload" 
+                    type="file" 
+                    className="sr-only"
+                    accept=".txt,.pdf,.doc,.docx"
+                    onChange={handleFileUpload}
+                  />
                 </label>
                 <p className="text-xs text-gray-500 mt-1">
                   PDF, DOC, TXT up to 10MB

@@ -1,24 +1,21 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { Navigation } from '../components'
 import { adminAPI } from '../services/api'
 import toast from 'react-hot-toast'
 import {
   Users,
-  Settings,
-  Activity,
+  CheckCircle,
+  Key,
+  Lock,
   Search,
   Plus,
   Edit,
   Trash2,
   Eye,
   Ban,
-  CheckCircle,
-  XCircle,
-  Key,
-  FileText,
-  Lock
+  XCircle
 } from 'lucide-react'
 
 interface SystemStats {
@@ -66,7 +63,21 @@ interface SystemHealth {
 const AdminDashboard: React.FC = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'audit' | 'settings'>('overview')
+  const location = useLocation()
+  
+  // Determine current section from URL params
+  const getCurrentSection = () => {
+    const urlParams = new URLSearchParams(location.search)
+    const tab = urlParams.get('tab')
+    return tab || 'overview'
+  }
+  
+  const [currentSection, setCurrentSection] = useState(getCurrentSection())
+  
+  // Update section when URL changes
+  useEffect(() => {
+    setCurrentSection(getCurrentSection())
+  }, [location.search])
   
   // Data states
   const [stats, setStats] = useState<SystemStats>({
@@ -80,6 +91,7 @@ const AdminDashboard: React.FC = () => {
   })
   
   const [users, setUsers] = useState<User[]>([])
+  const [recentActivity, setRecentActivity] = useState<AuditLog[]>([])
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([])
   const [systemHealth, setSystemHealth] = useState<SystemHealth>({
     cpu: 45,
@@ -90,9 +102,8 @@ const AdminDashboard: React.FC = () => {
     backupStatus: 'recent'
   })
   
-  // UI states
   const [searchTerm, setSearchTerm] = useState('')
-
+  
   useEffect(() => {
     // Check if user is admin
     if (user?.role !== 'admin') {
@@ -109,7 +120,7 @@ const AdminDashboard: React.FC = () => {
       const [statsResponse, usersResponse, auditResponse, healthResponse] = await Promise.all([
         adminAPI.getSystemStats(),
         adminAPI.getUsers({ limit: 50 }),
-        adminAPI.getAuditLogs({ limit: 10 }),
+        adminAPI.getAuditLogs({ limit: 50 }),
         adminAPI.getSystemHealth()
       ])
       
@@ -132,7 +143,10 @@ const AdminDashboard: React.FC = () => {
       // Set real users data
       setUsers(usersData)
       
-      // Set real audit logs
+      // Set real activity logs (recent for overview)
+      setRecentActivity(auditData.slice(0, 5))
+      
+      // Set all audit logs (for audit section)
       setAuditLogs(auditData)
       
       // Update system health
@@ -154,6 +168,7 @@ const AdminDashboard: React.FC = () => {
       })
       
       setUsers([])
+      setRecentActivity([])
       setAuditLogs([])
     }
   }
@@ -204,36 +219,32 @@ const AdminDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
-      <Navigation isAdmin={true} />
+      <Navigation />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Navigation Tabs */}
-        <div className="border-b border-gray-200 mb-8">
-          <nav className="-mb-px flex space-x-8">
-            {[
-              { id: 'overview', label: 'Overview', icon: Activity },
-              { id: 'users', label: 'User Management', icon: Users },
-              { id: 'audit', label: 'Audit Logs', icon: FileText },
-              { id: 'settings', label: 'Settings', icon: Settings },
-            ].map(({ id, label, icon: Icon }) => (
+        {/* Page Header */}
+        <div className="bg-white shadow rounded-lg p-6 mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+              <p className="text-sm text-gray-600 mt-1">System administration and monitoring</p>
+            </div>
+            
+            {/* Quick Actions */}
+            <div className="flex flex-wrap gap-2">
               <button
-                key={id}
-                onClick={() => setActiveTab(id as any)}
-                className={`${
-                  activeTab === id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } flex items-center py-2 px-1 border-b-2 font-medium text-sm`}
+                onClick={() => navigate('/dashboard')}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-green-700 transition-colors duration-200 flex items-center"
               >
-                <Icon className="h-4 w-4 mr-2" />
-                {label}
+                <Users className="h-4 w-4 mr-2" />
+                Switch to User View
               </button>
-            ))}
-          </nav>
+            </div>
+          </div>
         </div>
 
-        {/* Overview Tab */}
-        {activeTab === 'overview' && (
+        {/* Content based on current section */}
+        {currentSection === 'overview' && (
           <div className="space-y-8">
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -302,115 +313,115 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* System Health */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-white shadow rounded-lg p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">System Health</h3>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-sm font-medium text-gray-700 mb-1">
-                      <span>CPU Usage</span>
-                      <span>{systemHealth.cpu}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${systemHealth.cpu}%` }}></div>
-                    </div>
+          {/* System Health */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">System Health</h3>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-sm font-medium text-gray-700 mb-1">
+                    <span>CPU Usage</span>
+                    <span>{systemHealth.cpu}%</span>
                   </div>
-                  
-                  <div>
-                    <div className="flex justify-between text-sm font-medium text-gray-700 mb-1">
-                      <span>Memory Usage</span>
-                      <span>{systemHealth.memory}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-green-600 h-2 rounded-full" style={{ width: `${systemHealth.memory}%` }}></div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div className="flex justify-between text-sm font-medium text-gray-700 mb-1">
-                      <span>Disk Usage</span>
-                      <span>{systemHealth.disk}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-yellow-600 h-2 rounded-full" style={{ width: `${systemHealth.disk}%` }}></div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 pt-4">
-                    <div className="flex items-center">
-                      <div className={`w-3 h-3 rounded-full mr-2 ${
-                        systemHealth.database === 'connected' ? 'bg-green-400' : 'bg-red-400'
-                      }`}></div>
-                      <span className="text-sm text-gray-700">Database</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className={`w-3 h-3 rounded-full mr-2 ${
-                        systemHealth.network === 'good' ? 'bg-green-400' : 
-                        systemHealth.network === 'warning' ? 'bg-yellow-400' : 'bg-red-400'
-                      }`}></div>
-                      <span className="text-sm text-gray-700">Network</span>
-                    </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${systemHealth.cpu}%` }}></div>
                   </div>
                 </div>
-              </div>
+                
+                <div>
+                  <div className="flex justify-between text-sm font-medium text-gray-700 mb-1">
+                    <span>Memory Usage</span>
+                    <span>{systemHealth.memory}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-green-600 h-2 rounded-full" style={{ width: `${systemHealth.memory}%` }}></div>
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="flex justify-between text-sm font-medium text-gray-700 mb-1">
+                    <span>Disk Usage</span>
+                    <span>{systemHealth.disk}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-yellow-600 h-2 rounded-full" style={{ width: `${systemHealth.disk}%` }}></div>
+                  </div>
+                </div>
 
-              <div className="bg-white shadow rounded-lg p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">System Information</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Uptime</span>
-                    <span className="text-sm font-medium text-gray-900">{stats.systemUptime}</span>
+                <div className="grid grid-cols-2 gap-4 pt-4">
+                  <div className="flex items-center">
+                    <div className={`w-3 h-3 rounded-full mr-2 ${
+                      systemHealth.database === 'connected' ? 'bg-green-400' : 'bg-red-400'
+                    }`}></div>
+                    <span className="text-sm text-gray-700">Database</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Storage Used</span>
-                    <span className="text-sm font-medium text-gray-900">{stats.storageUsed}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Last Backup</span>
-                    <span className="text-sm font-medium text-gray-900">{stats.lastBackup}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Version</span>
-                    <span className="text-sm font-medium text-gray-900">v2.1.0</span>
+                  <div className="flex items-center">
+                    <div className={`w-3 h-3 rounded-full mr-2 ${
+                      systemHealth.network === 'good' ? 'bg-green-400' : 
+                      systemHealth.network === 'warning' ? 'bg-yellow-400' : 'bg-red-400'
+                    }`}></div>
+                    <span className="text-sm text-gray-700">Network</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Recent Activity */}
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">Recent Activity</h3>
-              </div>
-              <div className="overflow-hidden">
-                <ul className="divide-y divide-gray-200">
-                  {auditLogs.slice(0, 5).map((log) => (
-                    <li key={log.id} className="px-6 py-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className={`flex-shrink-0 w-2 h-2 rounded-full ${
-                            log.status === 'success' ? 'bg-green-400' : 'bg-red-400'
-                          }`}></div>
-                          <div className="ml-4">
-                            <p className="text-sm font-medium text-gray-900">
-                              {log.username} performed {log.action}
-                            </p>
-                            <p className="text-sm text-gray-500">{log.details}</p>
-                          </div>
-                        </div>
-                        <div className="text-sm text-gray-500">{log.timestamp}</div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">System Information</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Uptime</span>
+                  <span className="text-sm font-medium text-gray-900">{stats.systemUptime}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Storage Used</span>
+                  <span className="text-sm font-medium text-gray-900">{stats.storageUsed}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Last Backup</span>
+                  <span className="text-sm font-medium text-gray-900">{stats.lastBackup}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Version</span>
+                  <span className="text-sm font-medium text-gray-900">v2.1.0</span>
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Recent Activity */}
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">Recent Activity</h3>
+            </div>
+            <div className="overflow-hidden">
+              <ul className="divide-y divide-gray-200">
+                {recentActivity.slice(0, 5).map((log) => (
+                  <li key={log.id} className="px-6 py-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className={`flex-shrink-0 w-2 h-2 rounded-full ${
+                          log.status === 'success' ? 'bg-green-400' : 'bg-red-400'
+                        }`}></div>
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-gray-900">
+                            {log.username} performed {log.action}
+                          </p>
+                          <p className="text-sm text-gray-500">{log.details}</p>
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-500">{log.timestamp}</div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
         )}
 
-        {/* Users Tab */}
-        {activeTab === 'users' && (
+        {/* Users Section */}
+        {currentSection === 'users' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
@@ -528,8 +539,8 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Audit Tab */}
-        {activeTab === 'audit' && (
+        {/* Audit Logs Section */}
+        {currentSection === 'audit' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-gray-900">Audit Logs</h2>
@@ -604,8 +615,8 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Settings Tab */}
-        {activeTab === 'settings' && (
+        {/* Settings Section */}
+        {currentSection === 'settings' && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-900">System Settings</h2>
             

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Key, Plus, Trash2, Download, Upload, Eye, EyeOff } from 'lucide-react'
+import { Navigation } from '../components'
 import { useAuth } from '../contexts/AuthContext'
 
 interface CryptoKey {
@@ -12,7 +13,6 @@ interface CryptoKey {
 }
 
 export default function KeyManagement() {
-  const { user } = useAuth()
   const [keys, setKeys] = useState<CryptoKey[]>([
     {
       id: '1',
@@ -54,15 +54,68 @@ export default function KeyManagement() {
     setKeys(keys.filter(key => key.id !== keyId))
   }
 
+  const handleKeyFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        alert('File size must be less than 10MB')
+        return
+      }
+      
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        try {
+          const content = e.target?.result as string
+          let keyData
+          
+          // Try to parse as JSON first
+          try {
+            keyData = JSON.parse(content)
+          } catch {
+            // If not JSON, treat as raw key data
+            keyData = {
+              name: file.name.replace(/\.[^/.]+$/, ""), // Remove file extension
+              algorithm: 'Unknown',
+              keySize: 'Unknown',
+              keyData: content
+            }
+          }
+          
+          const newKey: CryptoKey = {
+            id: Date.now().toString(),
+            name: keyData.name || file.name,
+            algorithm: keyData.algorithm || 'Unknown',
+            keySize: keyData.keySize || 'Unknown',
+            created: new Date().toISOString().split('T')[0],
+            status: 'active'
+          }
+          
+          setKeys([...keys, newKey])
+          alert('Key uploaded successfully!')
+        } catch (error) {
+          alert('Error reading key file. Please check the file format.')
+        }
+      }
+      reader.readAsText(file)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+      {/* Navigation */}
+      <Navigation />
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          {/* Page Header */}
+          <div className="flex justify-between items-center mb-8">
             <div className="flex items-center">
               <Key className="h-8 w-8 text-blue-600" />
-              <h1 className="ml-3 text-2xl font-bold text-gray-900">Key Management</h1>
+              <div className="ml-3">
+                <h1 className="text-2xl font-bold text-gray-900">Key Management</h1>
+                <p className="text-sm text-gray-600 mt-1">Generate, manage, and store cryptographic keys</p>
+              </div>
             </div>
             <button
               onClick={() => setShowCreateModal(true)}
@@ -72,12 +125,7 @@ export default function KeyManagement() {
               Generate New Key
             </button>
           </div>
-        </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
             <ul className="divide-y divide-gray-200">
               {keys.map((key) => (
@@ -143,7 +191,14 @@ export default function KeyManagement() {
                     <span className="mt-2 block text-sm font-medium text-gray-900">
                       Upload a key file
                     </span>
-                    <input id="key-upload" name="key-upload" type="file" className="sr-only" />
+                    <input 
+                      id="key-upload" 
+                      name="key-upload" 
+                      type="file" 
+                      className="sr-only"
+                      accept=".pem,.der,.json,.key,.txt"
+                      onChange={handleKeyFileUpload}
+                    />
                   </label>
                   <p className="mt-2 text-xs text-gray-500">
                     PEM, DER, or JSON format up to 10MB

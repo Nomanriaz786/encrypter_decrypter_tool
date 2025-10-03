@@ -7,16 +7,11 @@ import {
   Key,
   FileText,
   Users,
-  Settings,
   Activity,
   LogOut
 } from 'lucide-react'
 
-interface NavigationProps {
-  isAdmin?: boolean
-}
-
-const Navigation: React.FC<NavigationProps> = ({ isAdmin = false }) => {
+const Navigation: React.FC = () => {
   const { user, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
@@ -26,6 +21,9 @@ const Navigation: React.FC<NavigationProps> = ({ isAdmin = false }) => {
     navigate('/login')
   }
 
+  // Automatically detect if user is admin
+  const isAdmin = user?.role === 'admin'
+
   const userNavItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
     { path: '/keys', label: 'Key Management', icon: Key },
@@ -34,18 +32,26 @@ const Navigation: React.FC<NavigationProps> = ({ isAdmin = false }) => {
 
   const adminNavItems = [
     { path: '/admin', label: 'Overview', icon: Activity },
-    { path: '/admin/users', label: 'Users', icon: Users },
-    { path: '/admin/audit', label: 'Audit Logs', icon: FileText },
-    { path: '/admin/settings', label: 'Settings', icon: Settings }
+    { path: '/admin?tab=users', label: 'Users', icon: Users },
+    { path: '/admin?tab=audit', label: 'Audit Logs', icon: FileText },
+    { path: '/admin?tab=settings', label: 'Settings', icon: Key },
+    { path: '/dashboard', label: 'User View', icon: Home }
   ]
 
   const navItems = isAdmin ? adminNavItems : userNavItems
 
   const isActivePath = (path: string) => {
-    if (path === '/admin' && location.pathname === '/admin') {
+    if (path === '/admin' && location.pathname === '/admin' && !location.search) {
       return true
     }
-    if (path !== '/admin' && path !== '/dashboard') {
+    if (path.includes('?') && location.pathname === '/admin') {
+      const urlParams = new URLSearchParams(location.search)
+      const pathParams = new URLSearchParams(path.split('?')[1])
+      const tabParam = pathParams.get('tab')
+      const currentTab = urlParams.get('tab')
+      return tabParam === currentTab
+    }
+    if (path !== '/admin' && path !== '/dashboard' && !path.includes('?')) {
       return location.pathname.startsWith(path)
     }
     return location.pathname === path
@@ -60,7 +66,7 @@ const Navigation: React.FC<NavigationProps> = ({ isAdmin = false }) => {
             <Link to={isAdmin ? '/admin' : '/dashboard'} className="flex items-center">
               <Shield className="h-8 w-8 text-blue-600" />
               <span className="ml-3 text-xl font-semibold text-gray-900">
-                CryptoSecure {isAdmin && 'Admin'}
+                SecureVault {isAdmin && 'Admin'}
               </span>
             </Link>
           </div>

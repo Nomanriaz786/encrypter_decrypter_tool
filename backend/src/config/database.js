@@ -32,8 +32,26 @@ export async function connectDB() {
     
     // Sync models in development
     if (process.env.NODE_ENV === 'development') {
-      await sequelize.sync({ alter: true })
-      console.log('📊 Database models synchronized')
+      try {
+        // First try normal sync
+        await sequelize.sync()
+        console.log('📊 Database models synchronized')
+      } catch (error) {
+        if (error.name === 'SequelizeDatabaseError' && error.original.code === 'ER_TOO_MANY_KEYS') {
+          console.log('⚠️  Too many keys detected, dropping and recreating tables...')
+          // Drop all tables and recreate them
+          await sequelize.drop()
+          await sequelize.sync()
+          console.log('📊 Database tables recreated successfully')
+          
+          // Re-seed the database with default users
+          console.log('🌱 Re-seeding database with default users...')
+          const seedUsers = (await import('../seed.js')).default
+          await seedUsers()
+        } else {
+          throw error
+        }
+      }
     }
   } catch (error) {
     console.error('❌ Database connection failed:', error)
