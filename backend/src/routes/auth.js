@@ -6,6 +6,7 @@ import { body, validationResult } from 'express-validator'
 import User from '../models/User.js'
 import AuditLog from '../models/AuditLog.js'
 import { authenticateToken } from '../middleware/auth.js'
+import { profileUpload, deleteOldProfilePicture } from '../config/upload.js'
 
 const router = express.Router()
 
@@ -193,7 +194,9 @@ router.post('/2fa/verify', authenticateToken, [
     }
 
     const { token } = req.body
-    const user = req.user
+    
+    // Fetch user with twoFactorSecret (not excluded)
+    const user = await User.findByPk(req.user.id)
 
     if (!user.twoFactorSecret) {
       return res.status(400).json({ error: '2FA not set up' })
@@ -240,7 +243,9 @@ router.post('/2fa/disable', authenticateToken, [
     }
 
     const { password, token } = req.body
-    const user = req.user
+    
+    // Fetch user with twoFactorSecret (not excluded)
+    const user = await User.findByPk(req.user.id)
 
     // Verify password
     const isValidPassword = await user.comparePassword(password)
@@ -288,11 +293,191 @@ router.get('/profile', authenticateToken, (req, res) => {
       id: req.user.id,
       username: req.user.username,
       email: req.user.email,
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
+      phoneNumber: req.user.phoneNumber,
+      department: req.user.department,
+      profilePicture: req.user.profilePicture,
       role: req.user.role,
       twoFactorEnabled: req.user.twoFactorEnabled,
-      lastLogin: req.user.lastLogin
+      lastLogin: req.user.lastLogin,
+      preferences: req.user.preferences
     }
   })
+})
+
+// Update user profile
+router.put('/profile', authenticateToken, [
+  body('firstName').optional().isLength({ min: 1, max: 50 }).trim(),
+  body('lastName').optional().isLength({ min: 1, max: 50 }).trim(),
+  body('phoneNumber').optional().isMobilePhone(),
+  body('department').optional().isLength({ min: 1, max: 100 }).trim()
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() })
+    }
+
+    const { firstName, lastName, phoneNumber, department } = req.body
+    const user = await User.findByPk(req.user.id)
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
+    await user.update({
+      firstName: firstName !== undefined ? firstName : user.firstName,
+      lastName: lastName !== undefined ? lastName : user.lastName,
+      phoneNumber: phoneNumber !== undefined ? phoneNumber : user.phoneNumber,
+      department: department !== undefined ? department : user.department
+    })
+
+    // Log profile update
+    await AuditLog.create({
+      userId: req.user.id,
+      action: 'update_profile',
+      resource: 'user',
+      details: { updatedFields: Object.keys(req.body) },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent')
+    })
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phoneNumber: user.phoneNumber,
+        department: user.department,
+        profilePicture: user.profilePicture,
+        role: user.role
+      }
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Update profile picture
+router.post('/profile/picture', authenticateToken, profileUpload.single('profilePicture'), async (req, res, next) => {
+  try {
+    const user = await User.findByPk(req.user.id)
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' })
+    }
+
+    // Delete old profile picture if exists
+    if (user.profilePicture) {
+      deleteOldProfilePicture(user.profilePicture)
+    }
+
+    // Store only the filename, not the full path
+    const filename = req.file.filename
+    await user.update({ profilePicture: filename })
+
+    // Log profile picture update
+    await AuditLog.create({
+      userId: req.user.id,
+      action: 'update_profile_picture',
+      resource: 'user',
+      details: { filename, fileSize: req.file.size },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent')
+    })
+
+    res.json({
+      message: 'Profile picture updated successfully',
+      profilePicture: filename
+    })
+  } catch (error) {
+    // Clean up uploaded file if there's an error
+    if (req.file) {
+      deleteOldProfilePicture(req.file.filename)
+    }
+    next(error)
+  }
+})
+
+// Delete profile picture
+router.delete('/profile/picture', authenticateToken, async (req, res, next) => {
+  try {
+    const user = await User.findByPk(req.user.id)
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
+    // Delete the file if exists
+    if (user.profilePicture) {
+      deleteOldProfilePicture(user.profilePicture)
+      await user.update({ profilePicture: null })
+    }
+
+    // Log profile picture deletion
+    await AuditLog.create({
+      userId: req.user.id,
+      action: 'delete_profile_picture',
+      resource: 'user',
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent')
+    })
+
+    res.json({ message: 'Profile picture deleted successfully' })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Change password
+router.put('/profile/password', authenticateToken, [
+  body('currentPassword').notEmpty().withMessage('Current password is required'),
+  body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters')
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() })
+    }
+
+    const { currentPassword, newPassword } = req.body
+    const user = await User.findByPk(req.user.id)
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
+    // Verify current password
+    const isPasswordValid = await user.comparePassword(currentPassword)
+    if (!isPasswordValid) {
+      return res.status(400).json({ error: 'Current password is incorrect' })
+    }
+
+    // Update password
+    await user.update({ password: newPassword })
+
+    // Log password change
+    await AuditLog.create({
+      userId: req.user.id,
+      action: 'change_password',
+      resource: 'user',
+      details: { success: true },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent')
+    })
+
+    res.json({ message: 'Password changed successfully' })
+  } catch (error) {
+    next(error)
+  }
 })
 
 export default router

@@ -8,7 +8,8 @@ import {
   FileText,
   Users,
   Activity,
-  LogOut
+  LogOut,
+  Hash
 } from 'lucide-react'
 
 const Navigation: React.FC = () => {
@@ -26,16 +27,17 @@ const Navigation: React.FC = () => {
 
   const userNavItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
-    { path: '/keys', label: 'Key Management', icon: Key },
-    { path: '/signatures', label: 'Digital Signatures', icon: FileText }
+    { path: '/encrypt', label: 'Encrypt', icon: Shield },
+    { path: '/hash', label: 'Hash', icon: Hash },
+    { path: '/keys', label: 'Keys', icon: Key },
+    { path: '/signatures', label: 'Signatures', icon: FileText }
   ]
 
   const adminNavItems = [
-    { path: '/admin', label: 'Overview', icon: Activity },
+    { path: '/admin', label: 'Dashboard', icon: Activity },
     { path: '/admin?tab=users', label: 'Users', icon: Users },
     { path: '/admin?tab=audit', label: 'Audit Logs', icon: FileText },
-    { path: '/admin?tab=settings', label: 'Settings', icon: Key },
-    { path: '/dashboard', label: 'User View', icon: Home }
+    { path: '/admin?tab=settings', label: 'Settings', icon: Key }
   ]
 
   const navItems = isAdmin ? adminNavItems : userNavItems
@@ -64,9 +66,10 @@ const Navigation: React.FC = () => {
           {/* Logo and Brand */}
           <div className="flex items-center">
             <Link to={isAdmin ? '/admin' : '/dashboard'} className="flex items-center">
-              <Shield className="h-8 w-8 text-blue-600" />
+              <Shield className={`h-8 w-8 ${isAdmin ? 'text-purple-600' : 'text-blue-600'}`} />
               <span className="ml-3 text-xl font-semibold text-gray-900">
-                SecureVault {isAdmin && 'Admin'}
+                SecureVault
+                {isAdmin && <span className="ml-2 text-sm font-normal text-purple-600">Admin Panel</span>}
               </span>
             </Link>
           </div>
@@ -91,33 +94,32 @@ const Navigation: React.FC = () => {
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
-            {/* Quick Actions for Non-Admin */}
-            {!isAdmin && (
-              <div className="hidden lg:flex items-center space-x-2">
-                <Link
-                  to="/keys"
-                  className="text-gray-400 hover:text-gray-600 p-2 rounded-md hover:bg-gray-100"
-                  title="Manage Keys"
-                >
-                  <Key className="h-5 w-5" />
-                </Link>
-                <Link
-                  to="/signatures"
-                  className="text-gray-400 hover:text-gray-600 p-2 rounded-md hover:bg-gray-100"
-                  title="Digital Signatures"
-                >
-                  <FileText className="h-5 w-5" />
-                </Link>
-              </div>
+            {/* Admin: View as User Button */}
+            {isAdmin && (
+              <Link
+                to="/dashboard"
+                className="hidden sm:flex items-center space-x-2 px-3 py-2 text-sm font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-md transition-colors"
+              >
+                <Home className="h-4 w-4" />
+                <span>User View</span>
+              </Link>
             )}
 
             {/* User Info */}
             <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-2">
-                <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-blue-600 font-medium text-sm">
-                    {user?.username?.charAt(0).toUpperCase()}
-                  </span>
+              <Link to="/profile" className="flex items-center space-x-2 hover:bg-gray-50 rounded-lg p-1 transition-colors">
+                <div className="h-8 w-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center overflow-hidden">
+                  {user?.profilePicture ? (
+                    <img
+                      src={`http://localhost:5000/uploads/profiles/${user.profilePicture}`}
+                      alt="Profile"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-white font-medium text-sm">
+                      {user?.username?.charAt(0).toUpperCase()}
+                    </span>
+                  )}
                 </div>
                 <div className="hidden sm:block">
                   <span className="text-sm font-medium text-gray-700">{user?.username}</span>
@@ -127,7 +129,7 @@ const Navigation: React.FC = () => {
                     </span>
                   )}
                 </div>
-              </div>
+              </Link>
               
               <button
                 onClick={handleLogout}

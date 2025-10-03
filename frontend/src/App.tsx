@@ -7,6 +7,9 @@ import UserDashboard from './pages/UserDashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import KeyManagement from './pages/KeyManagement'
 import DigitalSignature from './pages/DigitalSignature'
+import EncryptDecrypt from './pages/EncryptDecrypt'
+import HashVerify from './pages/HashVerify'
+import Profile from './pages/Profile'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -74,6 +77,21 @@ function App() {
             <Route path="/signatures" element={
               <ProtectedRoute>
                 <DigitalSignature />
+              </ProtectedRoute>
+            } />
+            <Route path="/encrypt" element={
+              <ProtectedRoute>
+                <EncryptDecrypt />
+              </ProtectedRoute>
+            } />
+            <Route path="/hash" element={
+              <ProtectedRoute>
+                <HashVerify />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             } />
             {/* Catch all route - redirect to appropriate dashboard */}

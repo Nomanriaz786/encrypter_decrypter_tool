@@ -8,7 +8,7 @@ export class CryptoService {
       const keyBuffer = crypto.scryptSync(key, 'salt', keySize / 8)
       const iv = crypto.randomBytes(16)
       
-      const cipher = crypto.createCipher(algorithm, keyBuffer)
+      const cipher = crypto.createCipheriv(algorithm, keyBuffer, iv)
       cipher.setAAD(Buffer.from('additional data'))
       
       let encrypted = cipher.update(text, 'utf8', 'hex')
@@ -31,8 +31,9 @@ export class CryptoService {
     try {
       const algorithm = `aes-${keySize}-gcm`
       const keyBuffer = crypto.scryptSync(key, 'salt', keySize / 8)
+      const iv = Buffer.from(encryptedData.iv, 'hex')
       
-      const decipher = crypto.createDecipher(algorithm, keyBuffer)
+      const decipher = crypto.createDecipheriv(algorithm, keyBuffer, iv)
       decipher.setAAD(Buffer.from('additional data'))
       decipher.setAuthTag(Buffer.from(encryptedData.authTag, 'hex'))
       

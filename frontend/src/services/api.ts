@@ -46,7 +46,28 @@ export const authAPI = {
   disable2FA: (password: string, token: string) =>
     api.post('/auth/2fa/disable', { password, token }),
   
-  getProfile: () => api.get('/auth/profile')
+  getProfile: () => api.get('/auth/profile'),
+  
+  updateProfile: (data: {
+    firstName?: string
+    lastName?: string
+    phoneNumber?: string
+    department?: string
+  }) => api.put('/auth/profile', data),
+  
+  updateProfilePicture: (formData: FormData) =>
+    api.post('/auth/profile/picture', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    }),
+  
+  deleteProfilePicture: () => api.delete('/auth/profile/picture'),
+  
+  changePassword: (data: {
+    currentPassword: string
+    newPassword: string
+  }) => api.put('/auth/profile/password', data)
 }
 
 export const cryptoAPI = {

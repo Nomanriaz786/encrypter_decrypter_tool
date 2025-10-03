@@ -3,6 +3,8 @@ import cors from 'cors'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 import dotenv from 'dotenv'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import { connectDB } from './config/database.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import authRoutes from './routes/auth.js'
@@ -12,6 +14,9 @@ import signatureRoutes from './routes/signatures.js'
 import adminRoutes from './routes/admin.js'
 import dashboardRoutes from './routes/dashboard.js'
 
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 // Load environment variables
 dotenv.config()
 
@@ -19,7 +24,9 @@ const app = express()
 const PORT = process.env.PORT || 5000
 
 // Security middleware
-app.use(helmet())
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}))
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:3000'],
   credentials: true
@@ -35,6 +42,10 @@ app.use(limiter)
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
+
+// Static file serving for uploads
+const uploadsPath = path.join(__dirname, '..', 'uploads')
+app.use('/uploads', express.static(uploadsPath))
 
 // Routes
 app.use('/api/auth', authRoutes)
