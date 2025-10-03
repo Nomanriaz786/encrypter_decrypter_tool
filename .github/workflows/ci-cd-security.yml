@@ -36,11 +36,11 @@ jobs:
 
       - name: Install Backend Dependencies
         working-directory: ./backend
-        run: npm ci
+        run: npm install
 
       - name: Install Frontend Dependencies
         working-directory: ./frontend
-        run: npm ci
+        run: npm install
 
       - name: Run ESLint on Backend
         working-directory: ./backend
@@ -87,7 +87,7 @@ jobs:
 
       - name: Install Dependencies
         working-directory: ./backend
-        run: npm ci
+        run: npm install
 
       - name: Wait for MySQL
         run: |
@@ -134,7 +134,7 @@ jobs:
 
       - name: Install Dependencies
         working-directory: ./frontend
-        run: npm ci
+        run: npm install
 
       - name: Run Frontend Tests
         working-directory: ./frontend
@@ -274,7 +274,7 @@ jobs:
 
       - name: Install Backend Dependencies
         working-directory: ./backend
-        run: npm ci
+        run: npm install
 
       - name: Start Backend Server
         working-directory: ./backend
@@ -352,13 +352,13 @@ jobs:
       - name: Build Backend
         working-directory: ./backend
         run: |
-          npm ci
+          npm install
           echo "Backend build completed"
 
       - name: Build Frontend
         working-directory: ./frontend
         run: |
-          npm ci
+          npm install
           npm run build
 
       - name: Upload Build Artifacts
