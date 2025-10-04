@@ -63,11 +63,12 @@ export default function Login() {
     }
   }
 
-  const buttonText = loading
-    ? 'Signing in...'
-    : require2FA
-    ? 'Verify 2FA'
-    : 'Login';
+  let buttonText = 'Login';
+  if (loading) {
+    buttonText = 'Signing in...';
+  } else if (require2FA) {
+    buttonText = 'Verify 2FA';
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -208,14 +209,13 @@ export default function Login() {
                   Forgot Password?
                 </button>
               </div>
-
-                {buttonText}
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
                 className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {loading ? 'Signing in...' : require2FA ? 'Verify 2FA' : 'Login'}
+                {buttonText}
               </button>
             </form>
 
