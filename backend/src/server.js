@@ -101,8 +101,6 @@ async function startServer() {
   }
 }
 
-// Only start server if this file is run directly (not imported for testing)
-// Check if this module is the main module being executed
 const isMainModule = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]
 if (isMainModule || process.env.NODE_ENV !== 'test') {
   startServer()
