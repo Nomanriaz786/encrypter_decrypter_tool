@@ -4,28 +4,28 @@ A full-stack application providing secure data encryption, decryption, and integ
 
 ## Features
 
-### 🔐 Encryption & Decryption
+### Encryption & Decryption
 - **AES Encryption**: Support for 128, 192, and 256-bit keys
 - **RSA Encryption**: Support for 1024, 2048, and 4096-bit keys
 - **Real-time Processing**: Instant encryption/decryption with visual feedback
 
-### 🔍 File Hashing & Integrity
+### File Hashing & Integrity
 - **Multiple Algorithms**: MD5, SHA-256, SHA-512
 - **Integrity Verification**: Detect file tampering
 - **Hash Comparison**: Side-by-side hash validation
 
-### 🔑 Key Management
+### Key Management
 - **Generate Keys**: Create AES and RSA key pairs
 - **Save/Load Keys**: Secure key storage and retrieval
 - **Key Revocation**: Disable compromised keys
 - **Export/Import**: Backup and restore keys
 
-### ✍️ Digital Signatures
+### Digital Signatures
 - **Document Signing**: RSA-SHA256, RSA-SHA512, ECDSA-SHA256
 - **Signature Verification**: Validate document authenticity
 - **Timestamp Support**: Signed timestamps for legal validity
 
-### 🛡️ Security Features
+### Security Features
 - **RBAC**: Role-based access control
 - **2FA**: Two-factor authentication with TOTP
 - **JWT**: Secure token-based authentication
@@ -49,29 +49,6 @@ A full-stack application providing secure data encryption, decryption, and integ
 - **Speakeasy** for 2FA
 - **Crypto** for encryption operations
 - **Helmet** for security headers
-
-## Project Structure
-
-```
-encrypter/
-├── frontend/                 # React application
-│   ├── src/
-│   │   ├── components/      # Reusable UI components
-│   │   ├── pages/          # Page components
-│   │   ├── contexts/       # React contexts
-│   │   └── utils/          # Utility functions
-│   ├── public/             # Static assets
-│   └── package.json
-├── backend/                 # Node.js API
-│   ├── src/
-│   │   ├── routes/         # API routes
-│   │   ├── models/         # Database models
-│   │   ├── services/       # Business logic
-│   │   ├── middleware/     # Express middleware
-│   │   └── config/         # Configuration
-│   └── package.json
-└── README.md
-```
 
 ## Quick Start
 
@@ -109,7 +86,7 @@ cp .env.example .env
 npm run dev
 ```
 
-The backend will run on `http://localhost:5000`
+The backend will run on `http://localhost:5000` and automatically will create the db tables.
 
 ### Frontend Setup
 1. Navigate to frontend directory:
@@ -180,40 +157,17 @@ The frontend will run on `http://localhost:5173`
 ### Running Tests
 ```bash
 # Backend tests
-cd backend && npm test
+cd backend; npm test
 
 # Frontend tests  
-cd frontend && npm test
+cd frontend; npm test
 ```
 
 ### Building for Production
 ```bash
 # Build frontend
-cd frontend && npm run build
+cd frontend; npm run build
 
 # Backend is ready for production
-cd backend && npm start
+cd backend; npm start
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-## License
-
-MIT License - see LICENSE file for details.
-
-## Support
-
-For support and questions:
-- Create an issue on GitHub
-- Check the documentation
-- Contact the development team
-
----
-
-**⚠️ Security Notice**: This tool handles sensitive cryptographic operations. Always follow security best practices and never use in production without proper security review.
