@@ -20,9 +20,8 @@ RUN npm ci --only=production && npm cache clean --force
 
 # Copy application code
 COPY src/ ./src/
-# Create uploads directory and copy contents
-RUN mkdir -p ./uploads
-COPY uploads/ ./uploads/ 2>/dev/null || echo "No uploads to copy"
+# Copy uploads directory structure
+COPY uploads/ ./uploads/
 
 # Create non-root user and change ownership of app directory
 RUN addgroup -g 1001 -S nodejs && \
