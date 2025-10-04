@@ -84,6 +84,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Debug SonarQube Secrets
+        run: |
+          echo "SONAR_PROJECT_KEY: '${{ env.SONAR_PROJECT_KEY }}'"
+          echo "SONAR_ORGANIZATION: '${{ env.SONAR_ORGANIZATION }}'"
+          echo "SONAR_TOKEN length: ${#SONAR_TOKEN}"
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
