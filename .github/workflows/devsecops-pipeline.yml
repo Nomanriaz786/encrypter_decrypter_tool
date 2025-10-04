@@ -141,7 +141,7 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.qualitygate.wait=false
             -Dsonar.sources=src/
-            -Dsonar.tests=src/**/__tests__/
+            -Dsonar.tests=src/
             -Dsonar.test.inclusions=**/*.test.tsx,**/*.test.ts,**/*.spec.tsx,**/*.spec.ts
             -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/*.config.*
         env:
