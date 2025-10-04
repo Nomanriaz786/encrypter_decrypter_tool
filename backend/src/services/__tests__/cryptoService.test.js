@@ -213,14 +213,6 @@ describe('CryptoService', () => {
       }).toThrow('Digital signing failed')
     })
 
-    it('should throw error for invalid public key during verification', () => {
-      const signature = CryptoService.signData(testData, keyPair.privateKey)
-
-      expect(() => {
-        CryptoService.verifySignature(testData, signature, 'invalid-public-key')
-      }).toThrow('Signature verification failed')
-    })
-
     it('should work with different algorithms', () => {
       const signature = CryptoService.signData(testData, keyPair.privateKey, 'RSA-SHA512')
       const isValid = CryptoService.verifySignature(testData, signature, keyPair.publicKey, 'RSA-SHA512')

@@ -99,7 +99,7 @@ describe('Authentication Middleware', () => {
 })
 
 describe('Error Handler Middleware', () => {
-  let req, res, next, originalEnv
+  let req, res, next, originalEnv, consoleErrorSpy
 
   beforeEach(() => {
     req = {}
@@ -109,10 +109,14 @@ describe('Error Handler Middleware', () => {
     }
     next = jest.fn()
     originalEnv = process.env.NODE_ENV
+    // Mock console.error to prevent test output pollution
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   afterEach(() => {
     process.env.NODE_ENV = originalEnv
+    // Restore console.error
+    consoleErrorSpy.mockRestore()
   })
 
   it('should handle generic errors with default status 500', () => {

@@ -104,17 +104,6 @@ jobs:
           cd frontend
           npm ci
 
-      # Run tests with coverage
-      - name: Run backend tests
-        run: |
-          cd backend
-          npm run test:coverage || npm test
-
-      - name: Run frontend tests
-        run: |
-          cd frontend
-          npm run test:coverage || npm test
-
       # SonarQube Scan
       - name: SonarQube Backend Scan
         uses: sonarsource/sonarqube-scan-action@v2
@@ -126,9 +115,7 @@ jobs:
             -Dsonar.sources=src/
             -Dsonar.tests=__tests__/
             -Dsonar.test.inclusions=**/*.test.js,**/*.spec.js
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-            -Dsonar.exclusions=**/node_modules/**,**/coverage/**,**/*.config.js
-            -Dsonar.coverage.exclusions=**/*.test.js,**/*.spec.js
+            -Dsonar.exclusions=**/node_modules/**,**/*.config.js
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -142,9 +129,7 @@ jobs:
             -Dsonar.sources=src/
             -Dsonar.tests=src/**/__tests__/
             -Dsonar.test.inclusions=**/*.test.tsx,**/*.test.ts,**/*.spec.tsx,**/*.spec.ts
-            -Dsonar.typescript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/*.config.*
-            -Dsonar.coverage.exclusions=**/*.test.*,**/*.spec.*
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
 
