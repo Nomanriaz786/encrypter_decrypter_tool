@@ -110,7 +110,7 @@ jobs:
         with:
           projectBaseDir: backend/
           args: >
-            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}-backend
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
             -Dsonar.organization=${{ env.SONAR_ORGANIZATION }}
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.sources=src/
@@ -125,7 +125,7 @@ jobs:
         with:
           projectBaseDir: frontend/
           args: >
-            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}-frontend
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
             -Dsonar.organization=${{ env.SONAR_ORGANIZATION }}
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.sources=src/
