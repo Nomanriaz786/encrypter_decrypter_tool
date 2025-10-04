@@ -22,12 +22,10 @@ RUN npm ci --only=production && npm cache clean --force
 COPY src/ ./src/
 COPY uploads/ ./uploads/
 
-# Create non-root user
+# Create non-root user and change ownership of app directory
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001
-
-# Change ownership of app directory
-RUN chown -R nextjs:nodejs /app
+    adduser -S nextjs -u 1001 && \
+    chown -R nextjs:nodejs /app
 USER nextjs
 
 # Expose port
