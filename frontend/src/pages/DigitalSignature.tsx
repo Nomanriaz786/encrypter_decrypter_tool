@@ -409,6 +409,8 @@ function VerifySignatureTab() {
   const [signature, setSignature] = useState('')
   const [publicKey, setPublicKey] = useState('')
   const [verificationResult, setVerificationResult] = useState<'unknown' | 'valid' | 'invalid'>('unknown')
+  const [signatureData, setSignatureData] = useState<any>(null)
+  const [isDocumentSignature, setIsDocumentSignature] = useState(false)
 
   const handleVerify = async () => {
     if (!document.trim() || !signature.trim() || !publicKey.trim()) {
@@ -417,11 +419,51 @@ function VerifySignatureTab() {
     }
 
     try {
-      const response = await signatureAPI.verify({
-        data: document,
-        signature: signature,
-        publicKey: publicKey
-      })
+      // Try to parse signature as JSON first (document signature format)
+      let parsedSignature = null
+      let isDocumentSig = false
+      
+      try {
+        parsedSignature = JSON.parse(signature.trim())
+        if (parsedSignature.signature && parsedSignature.signaturePayload) {
+          isDocumentSig = true
+          setIsDocumentSignature(true)
+          setSignatureData(parsedSignature)
+        }
+      } catch (e) {
+        console.log('Signature is not JSON, treating as simple signature', e)
+        setIsDocumentSignature(false)
+      }
+
+      let response
+      if (isDocumentSig && parsedSignature) {
+        // Use document verification
+        console.log('Using document verification with:', {
+          document: document,
+          signature: parsedSignature.signature,
+          signaturePayload: parsedSignature.signaturePayload,
+          publicKey: publicKey
+        })
+        response = await signatureAPI.verifyDocument({
+          document: document,
+          signature: parsedSignature.signature,
+          signaturePayload: parsedSignature.signaturePayload,
+          publicKey: publicKey
+        })
+      } else {
+        // Use simple signature verification
+        console.log('Using simple verification with:', {
+          data: document,
+          signature: signature.trim(),
+          publicKey: publicKey
+        })
+        response = await signatureAPI.verify({
+          data: document,
+          signature: signature.trim(),
+          publicKey: publicKey
+        })
+      }
+
       setVerificationResult(response.data.isValid ? 'valid' : 'invalid')
       toast.success(response.data.isValid ? 'Signature is valid!' : 'Signature is invalid!')
     } catch (error: any) {
@@ -457,8 +499,11 @@ function VerifySignatureTab() {
               onChange={(e) => setSignature(e.target.value)}
               rows={4}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 font-mono text-xs"
-              placeholder="Paste digital signature here"
+              placeholder="Paste digital signature here. For document signatures, paste the complete JSON output from signing."
             />
+            <p className="mt-1 text-xs text-gray-500">
+              Supports both simple signatures and document signatures (JSON format)
+            </p>
           </div>
 
           <div>
@@ -533,13 +578,47 @@ function VerifySignatureTab() {
             <h4 className="text-sm font-medium text-gray-900 mb-2">Signature Details</h4>
             <dl className="grid grid-cols-1 gap-x-4 gap-y-2 text-sm">
               <div>
-                <dt className="text-gray-500">Algorithm:</dt>
-                <dd className="text-gray-900">RSA-SHA256</dd>
+                <dt className="text-gray-500">Type:</dt>
+                <dd className="text-gray-900">{isDocumentSignature ? 'Document Signature' : 'Simple Signature'}</dd>
               </div>
-              <div>
-                <dt className="text-gray-500">Key Size:</dt>
-                <dd className="text-gray-900">2048 bits</dd>
-              </div>
+              {isDocumentSignature && signatureData?.signaturePayload && (
+                <>
+                  <div>
+                    <dt className="text-gray-500">Signer:</dt>
+                    <dd className="text-gray-900">{signatureData.signaturePayload.signer}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-gray-500">Algorithm:</dt>
+                    <dd className="text-gray-900">{signatureData.signaturePayload.algorithm}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-gray-500">Document Hash:</dt>
+                    <dd className="text-gray-900 font-mono text-xs break-all">{signatureData.signaturePayload.documentHash}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-gray-500">Timestamp:</dt>
+                    <dd className="text-gray-900">{signatureData.signaturePayload.timestamp ? new Date(signatureData.signaturePayload.timestamp).toLocaleString() : 'N/A'}</dd>
+                  </div>
+                  {signatureData.signaturePayload.metadata && (
+                    <div>
+                      <dt className="text-gray-500">Key Name:</dt>
+                      <dd className="text-gray-900">{signatureData.signaturePayload.metadata.keyName || 'N/A'}</dd>
+                    </div>
+                  )}
+                </>
+              )}
+              {!isDocumentSignature && (
+                <>
+                  <div>
+                    <dt className="text-gray-500">Algorithm:</dt>
+                    <dd className="text-gray-900">RSA-SHA256</dd>
+                  </div>
+                  <div>
+                    <dt className="text-gray-500">Key Size:</dt>
+                    <dd className="text-gray-900">2048 bits</dd>
+                  </div>
+                </>
+              )}
               <div>
                 <dt className="text-gray-500">Verified At:</dt>
                 <dd className="text-gray-900">{new Date().toLocaleString()}</dd>

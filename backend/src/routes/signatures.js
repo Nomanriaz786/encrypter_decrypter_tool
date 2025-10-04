@@ -99,16 +99,17 @@ router.post('/sign-document', authenticateToken, [
     // Create document hash
     const documentHash = CryptoService.generateHash(document, 'sha256')
     
-    // Create signature payload
+    // Create signature payload with consistent property order
     const signaturePayload = {
-      documentHash,
       algorithm,
-      timestamp: new Date().toISOString(),
+      documentHash,
+      metadata: metadata || {},
       signer: req.user.username,
-      metadata
+      timestamp: new Date().toISOString()
     }
 
-    const payloadString = JSON.stringify(signaturePayload)
+    // Ensure consistent JSON serialization
+    const payloadString = JSON.stringify(signaturePayload, Object.keys(signaturePayload).sort())
     const signature = CryptoService.signData(payloadString, privateKey, algorithm)
 
     // Log document signing
@@ -152,21 +153,34 @@ router.post('/verify-document', authenticateToken, [
 
     const { document, signature, signaturePayload, publicKey } = req.body
 
-    // Verify document hash
-    const actualDocumentHash = CryptoService.generateHash(document, 'sha256')
-    const payloadObj = typeof signaturePayload === 'string' 
-      ? JSON.parse(signaturePayload) 
-      : signaturePayload
+    // Parse signature payload
+    let payloadObj
+    try {
+      payloadObj = typeof signaturePayload === 'string' ? JSON.parse(signaturePayload) : signaturePayload
+    } catch (error) {
+      console.error('Invalid signature payload format', error)
+      return res.status(400).json({ error: 'Invalid signature payload format' })
+    }
 
+    // Verify document integrity
+    const actualDocumentHash = CryptoService.generateHash(document, 'sha256')
     const documentIntegrityValid = actualDocumentHash === payloadObj.documentHash
 
-    // Verify signature
-    const payloadString = JSON.stringify(payloadObj)
+    // Verify signature - ensure consistent JSON serialization with same property order
+    const verificationPayload = {
+      algorithm: payloadObj.algorithm,
+      documentHash: payloadObj.documentHash,
+      metadata: payloadObj.metadata || {},
+      signer: payloadObj.signer,
+      timestamp: payloadObj.timestamp
+    }
+    const payloadString = JSON.stringify(verificationPayload, Object.keys(verificationPayload).sort())
+
     const signatureValid = CryptoService.verifySignature(
       payloadString, 
       signature, 
       publicKey, 
-      payloadObj.algorithm
+      payloadObj.algorithm || 'RSA-SHA256'
     )
 
     const isValid = documentIntegrityValid && signatureValid
@@ -181,7 +195,9 @@ router.post('/verify-document', authenticateToken, [
         isValid,
         documentIntegrityValid,
         signatureValid,
-        documentLength: document.length
+        documentLength: document.length,
+        actualHash: actualDocumentHash,
+        expectedHash: payloadObj.documentHash
       },
       ipAddress: req.ip,
       userAgent: req.get('User-Agent')

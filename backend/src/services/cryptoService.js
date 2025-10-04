@@ -135,6 +135,12 @@ export class CryptoService {
   // Digital Signatures
   static signData(data, privateKey, algorithm = 'RSA-SHA256') {
     try {
+      // Ensure algorithm is valid
+      const validAlgorithms = ['RSA-SHA1', 'RSA-SHA256', 'RSA-SHA384', 'RSA-SHA512', 'sha1', 'sha256', 'sha384', 'sha512']
+      if (!validAlgorithms.includes(algorithm)) {
+        throw new Error(`Invalid algorithm: ${algorithm}`)
+      }
+      
       const sign = crypto.createSign(algorithm)
       sign.update(data, 'utf8')
       
@@ -146,11 +152,18 @@ export class CryptoService {
 
   static verifySignature(data, signature, publicKey, algorithm = 'RSA-SHA256') {
     try {
+      // Ensure algorithm is valid
+      const validAlgorithms = ['RSA-SHA1', 'RSA-SHA256', 'RSA-SHA384', 'RSA-SHA512', 'sha1', 'sha256', 'sha384', 'sha512']
+      if (!validAlgorithms.includes(algorithm)) {
+        throw new Error(`Invalid algorithm: ${algorithm}`)
+      }
+      
       const verify = crypto.createVerify(algorithm)
       verify.update(data, 'utf8')
       
       return verify.verify(publicKey, signature, 'base64')
     } catch (error) {
+      console.error(`Signature verification error: ${error.message}`)
       throw new Error(`Signature verification failed: ${error.message}`)
     }
   }

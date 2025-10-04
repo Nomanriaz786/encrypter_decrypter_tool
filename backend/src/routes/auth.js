@@ -312,10 +312,10 @@ router.get('/profile', authenticateToken, (req, res) => {
 
 // Update user profile
 router.put('/profile', authenticateToken, [
-  body('firstName').optional().isLength({ min: 1, max: 50 }).trim(),
-  body('lastName').optional().isLength({ min: 1, max: 50 }).trim(),
-  body('phoneNumber').optional().isMobilePhone(),
-  body('department').optional().isLength({ min: 1, max: 100 }).trim()
+  body('firstName').optional().isLength({ min: 0, max: 50 }).trim(),
+  body('lastName').optional().isLength({ min: 0, max: 50 }).trim(),
+  body('phoneNumber').optional().isLength({ min: 0, max: 20 }),
+  body('department').optional().isLength({ min: 0, max: 100 }).trim()
 ], async (req, res, next) => {
   try {
     const errors = validationResult(req)
@@ -331,10 +331,10 @@ router.put('/profile', authenticateToken, [
     }
 
     await user.update({
-      firstName: firstName !== undefined ? firstName : user.firstName,
-      lastName: lastName !== undefined ? lastName : user.lastName,
-      phoneNumber: phoneNumber !== undefined ? phoneNumber : user.phoneNumber,
-      department: department !== undefined ? department : user.department
+      firstName: firstName !== undefined && firstName !== '' ? firstName : user.firstName,
+      lastName: lastName !== undefined && lastName !== '' ? lastName : user.lastName,
+      phoneNumber: phoneNumber !== undefined && phoneNumber !== '' ? phoneNumber : user.phoneNumber,
+      department: department !== undefined && department !== '' ? department : user.department
     })
 
     // Log profile update
