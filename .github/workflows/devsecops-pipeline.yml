@@ -50,6 +50,17 @@ jobs:
             --nvdValidForHours 24
             --failOnCVSS 7
 
+      - name: Save OWASP Backend Reports
+        run: |
+          # Ensure target directory exists and copy reports produced into it
+          mkdir -p backend/reports
+          if [ -d "reports" ]; then
+            cp -r reports/* backend/reports/ || true
+            rm -rf reports/* || true
+          else
+            echo "No reports directory present in workspace"
+          fi
+
       - name: Run OWASP Dependency Check (Frontend)
         uses: dependency-check/Dependency-Check_Action@main
         with:
@@ -61,6 +72,16 @@ jobs:
             --enableExperimental
             --nvdValidForHours 24
             --failOnCVSS 7
+
+      - name: Save OWASP Frontend Reports
+        run: |
+          mkdir -p frontend/reports
+          if [ -d "reports" ]; then
+            cp -r reports/* frontend/reports/ || true
+            rm -rf reports/* || true
+          else
+            echo "No reports directory present in workspace"
+          fi
 
       # Upload OWASP reports
       - name: Upload OWASP Backend Report
