@@ -1,5 +1,9 @@
 name: DevSecOps CI/CD Pipeline
 
+permissions:
+  contents: read
+  security-events: write
+
 on:
   push:
     branches: [ main, develop ]
